@@ -171,6 +171,21 @@
     border-color: var(--neon);
     box-shadow: 0 0 14px oklch(0.78 0.18 220 / 0.3);
   }
+  .input {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--radius-lg);
+    background: var(--input);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--neon);
+    box-shadow: 0 0 0 3px oklch(0.78 0.18 220 / 0.15);
+  }
   .status-dot {
     width: 0.55rem;
     height: 0.55rem;
