@@ -69,6 +69,7 @@ function Dashboard() {
             <div className="grid md:grid-cols-2 gap-5">
               <LipReadPanel
                 mouthOpen={mouth}
+                active={running}
                 onText={(t) => {
                   setLipText(t);
                   log("info", `Lip recognized: "${t}"`);

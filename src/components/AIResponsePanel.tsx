@@ -25,7 +25,7 @@ export function AIResponsePanel({ incoming }: Props) {
   const [msgs, setMsgs] = useState<Msg[]>([
     { id: "0", role: "ai", text: "Echo online. Awaiting input." },
   ]);
-  const [voice, setVoice] = useState(true);
+  const [voice, setVoice] = useState(false);
   const lastRef = useRef<string>("");
   const endRef = useRef<HTMLDivElement>(null);
 
