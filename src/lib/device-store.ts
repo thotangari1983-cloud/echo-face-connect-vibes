@@ -7,10 +7,18 @@ export type DeviceState = {
   ssid: string | null;
   rssi: number | null; // dBm
   lastSeen: number | null;
+  autoReconnect: boolean;
 };
 
 const KEY = "echoface.device";
-const initial: DeviceState = { connected: false, ip: null, ssid: null, rssi: null, lastSeen: null };
+const initial: DeviceState = {
+  connected: false,
+  ip: null,
+  ssid: null,
+  rssi: null,
+  lastSeen: null,
+  autoReconnect: false,
+};
 
 function read(): DeviceState {
   if (typeof window === "undefined") return initial;
