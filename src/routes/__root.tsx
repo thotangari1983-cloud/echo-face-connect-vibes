@@ -79,13 +79,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Echo Face is a futuristic silent communication assistant powered by lip-reading AI and ESP32-S3 hardware.",
       },
-      { property: "og:title", content: "Echo Face — Silent Assistant" },
+      { property: "og:title", content: "Echo Face — A Silent Assistant for Communication" },
       {
         property: "og:description",
         content: "Lip-reading AI + ESP32-S3 silent communication platform.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Echo Face — A Silent Assistant for Communication" },
+      { name: "description", content: "Echo Face Connect is a futuristic AI web app for silent communication assistance." },
+      { property: "og:description", content: "Echo Face Connect is a futuristic AI web app for silent communication assistance." },
+      { name: "twitter:description", content: "Echo Face Connect is a futuristic AI web app for silent communication assistance." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/dEBHOErGPSMZu17rxfQ6l7yPdTF3/social-images/social-1778256123861-WhatsApp_Image_2026-05-08_at_21.31.32.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/dEBHOErGPSMZu17rxfQ6l7yPdTF3/social-images/social-1778256123861-WhatsApp_Image_2026-05-08_at_21.31.32.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
