@@ -54,19 +54,32 @@ export function DeviceStatusCard() {
           ))}
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-between gap-3">
+      <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
         <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
           {d.lastSeen ? `Last ping ${new Date(d.lastSeen).toLocaleTimeString()}` : "No pings yet"}
         </span>
-        <button
-          onClick={onRetry}
-          disabled={!canRetry || busy}
-          title={canRetry ? "Re-pair using last credentials" : "Pair from ESP32 Connect first"}
-          className="btn-ghost text-[10px] py-1.5 px-3 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <RefreshCw className={`h-3 w-3 ${busy ? "animate-spin" : ""}`} />
-          {busy ? "Pairing…" : "Retry Pairing"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setAutoReconnect(!d.autoReconnect)}
+            disabled={!canRetry}
+            title={canRetry ? "Auto-retry every 5s while disconnected" : "Pair from ESP32 Connect first"}
+            className={`btn-ghost text-[10px] py-1.5 px-3 disabled:opacity-40 disabled:cursor-not-allowed ${
+              d.autoReconnect ? "border-primary text-primary" : ""
+            }`}
+          >
+            <Repeat className={`h-3 w-3 ${d.autoReconnect && !d.connected ? "animate-spin" : ""}`} />
+            Auto {d.autoReconnect ? "On" : "Off"}
+          </button>
+          <button
+            onClick={onRetry}
+            disabled={!canRetry || busy}
+            title={canRetry ? "Re-pair using last credentials" : "Pair from ESP32 Connect first"}
+            className="btn-ghost text-[10px] py-1.5 px-3 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`h-3 w-3 ${busy ? "animate-spin" : ""}`} />
+            {busy ? "Pairing…" : "Retry"}
+          </button>
+        </div>
       </div>
       {err && <p className="mt-2 text-[11px] text-destructive">{err}</p>}
     </div>
