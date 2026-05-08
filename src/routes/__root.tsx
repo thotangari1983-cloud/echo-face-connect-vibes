@@ -118,6 +118,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  React.useEffect(() => {
+    import("@/lib/device-store").then((m) => m.startAutoReconnectSupervisor());
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
