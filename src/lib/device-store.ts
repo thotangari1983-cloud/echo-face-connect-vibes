@@ -78,3 +78,35 @@ export async function retryPairing(): Promise<{ ok: boolean; error?: string }> {
     return { ok: false, error: e instanceof Error ? e.message : "Pairing failed" };
   }
 }
+
+// --- Auto-reconnect supervisor (singleton) ---
+let supervisor: ReturnType<typeof setInterval> | null = null;
+let inFlight = false;
+const RETRY_MS = 5000;
+
+function tick() {
+  if (inFlight) return;
+  const cur = read();
+  if (!cur.autoReconnect) return;
+  if (cur.connected) return;
+  if (!cur.ssid || !cur.ip) return;
+  inFlight = true;
+  retryPairing().finally(() => {
+    inFlight = false;
+  });
+}
+
+export function startAutoReconnectSupervisor() {
+  if (typeof window === "undefined") return;
+  if (supervisor) return;
+  supervisor = setInterval(tick, RETRY_MS);
+}
+
+export function setAutoReconnect(enabled: boolean) {
+  setDevice({ autoReconnect: enabled });
+  if (enabled) {
+    startAutoReconnectSupervisor();
+    // Try immediately on enable.
+    tick();
+  }
+}
