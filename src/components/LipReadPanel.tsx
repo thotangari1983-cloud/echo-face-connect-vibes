@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Brain, Sparkles } from "lucide-react";
 
-type Props = { mouthOpen: number; onText?: (text: string) => void };
+type Props = { mouthOpen: number; active?: boolean; onText?: (text: string) => void };
 
 const phrases = [
   "Hello there",
@@ -14,12 +14,15 @@ const phrases = [
   "Connect to ESP32",
 ];
 
-export function LipReadPanel({ mouthOpen, onText }: Props) {
+export function LipReadPanel({ mouthOpen, active = false, onText }: Props) {
   const [text, setText] = useState("");
   const [confidence, setConfidence] = useState(0);
 
   useEffect(() => {
-    // Placeholder lip-reading: cycle phrases with confidence proportional to mouth movement.
+    if (!active) {
+      setConfidence(0);
+      return;
+    }
     const id = setInterval(() => {
       const phrase = phrases[Math.floor(Math.random() * phrases.length)];
       setText(phrase);
@@ -27,7 +30,7 @@ export function LipReadPanel({ mouthOpen, onText }: Props) {
       onText?.(phrase);
     }, 3500);
     return () => clearInterval(id);
-  }, [mouthOpen, onText]);
+  }, [mouthOpen, onText, active]);
 
   return (
     <div className="glass p-4">
