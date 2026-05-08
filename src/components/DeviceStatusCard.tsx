@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useDevice, retryPairing } from "@/lib/device-store";
-import { Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { useDevice, retryPairing, setAutoReconnect } from "@/lib/device-store";
+import { Wifi, WifiOff, RefreshCw, Repeat } from "lucide-react";
 
 export function DeviceStatusCard() {
   const d = useDevice();
