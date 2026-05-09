@@ -70,12 +70,13 @@ function Dashboard() {
               <LipReadPanel
                 mouthOpen={mouth}
                 active={running}
-                onText={(t) => {
+              />
+              <MicPanel
+                onTranscript={(t) => {
                   setLipText(t);
-                  log("info", `Lip recognized: "${t}"`);
+                  log("info", `Mic: ${t.slice(-40)}`);
                 }}
               />
-              <MicPanel onTranscript={(t) => log("info", `Mic: ${t.slice(-40)}`)} />
             </div>
             <AIResponsePanel incoming={lipText} />
           </div>
