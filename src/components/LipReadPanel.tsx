@@ -1,36 +1,10 @@
-import { useEffect, useState } from "react";
 import { Brain, Sparkles } from "lucide-react";
 
-type Props = { mouthOpen: number; active?: boolean; onText?: (text: string) => void };
+type Props = { mouthOpen: number; active?: boolean };
 
-const phrases = [
-  "Hello there",
-  "How are you today",
-  "Open the lab door",
-  "Increase volume",
-  "Show me the diagnostics",
-  "Send a status report",
-  "Activate silent mode",
-  "Connect to ESP32",
-];
-
-export function LipReadPanel({ mouthOpen, active = false, onText }: Props) {
-  const [text, setText] = useState("");
-  const [confidence, setConfidence] = useState(0);
-
-  useEffect(() => {
-    if (!active) {
-      setConfidence(0);
-      return;
-    }
-    const id = setInterval(() => {
-      const phrase = phrases[Math.floor(Math.random() * phrases.length)];
-      setText(phrase);
-      setConfidence(Math.round((0.55 + mouthOpen * 0.4) * 100));
-      onText?.(phrase);
-    }, 3500);
-    return () => clearInterval(id);
-  }, [mouthOpen, onText, active]);
+export function LipReadPanel({ mouthOpen, active = false }: Props) {
+  const confidence = active ? Math.round(Math.max(0, Math.min(1, mouthOpen)) * 100) : 0;
+  const text = active ? "No verified lip text" : "—";
 
   return (
     <div className="glass p-4">
@@ -44,7 +18,7 @@ export function LipReadPanel({ mouthOpen, active = false, onText }: Props) {
         <span className="text-[10px] text-muted-foreground">MediaPipe · LipNet</span>
       </div>
       <div className="font-display text-2xl neon-text min-h-10">
-        {text || "—"}
+        {text}
       </div>
       <div className="mt-4">
         <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
