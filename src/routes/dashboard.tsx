@@ -65,7 +65,7 @@ function Dashboard() {
 
         <div className="grid lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-5">
-            <CameraFeed onMouthOpen={setMouth} />
+            <CameraFeed running={running} onMouthOpen={setMouth} />
             <div className="grid md:grid-cols-2 gap-5">
               <LipReadPanel
                 mouthOpen={mouth}

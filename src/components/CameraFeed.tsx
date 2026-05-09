@@ -4,9 +4,10 @@ import { Camera, CameraOff, Aperture } from "lucide-react";
 type Props = {
   onFrame?: (canvas: HTMLCanvasElement) => void;
   onMouthOpen?: (open: number) => void;
+  running?: boolean;
 };
 
-export function CameraFeed({ onFrame, onMouthOpen }: Props) {
+export function CameraFeed({ onFrame, onMouthOpen, running = false }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
   const [active, setActive] = useState(false);
@@ -77,10 +78,11 @@ export function CameraFeed({ onFrame, onMouthOpen }: Props) {
           ctx.stroke();
         });
 
-        // Lip landmarks (synthetic ellipse with mouth-open animation)
+        // Only simulate lip movement when the assistant is actively
+        // listening — prevents the camera from auto-driving lip recognition.
         const t = performance.now() / 600;
-        const open = (Math.sin(t) + 1) / 2; // 0..1
-        onMouthOpen?.(open);
+        const open = running ? (Math.sin(t) + 1) / 2 : 0;
+        if (running) onMouthOpen?.(open);
         const mx = c.width / 2;
         const my = y + h * 0.78;
         const mw = w * 0.32;
@@ -105,7 +107,7 @@ export function CameraFeed({ onFrame, onMouthOpen }: Props) {
     };
     tick();
     return () => cancelAnimationFrame(raf);
-  }, [active, onMouthOpen]);
+  }, [active, onMouthOpen, running]);
 
   const snapshot = () => {
     const v = videoRef.current;
