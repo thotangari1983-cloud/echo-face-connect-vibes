@@ -4,6 +4,7 @@ import { Camera, CameraOff, Aperture } from "lucide-react";
 type Props = {
   onFrame?: (canvas: HTMLCanvasElement) => void;
   onMouthOpen?: (open: number) => void;
+  running?: boolean;
 };
 
 export function CameraFeed({ onFrame, onMouthOpen }: Props) {
