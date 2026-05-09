@@ -22,6 +22,7 @@ export function MicPanel({ onTranscript }: Props) {
   const [bars, setBars] = useState<number[]>(Array(28).fill(0.1));
   const audioRef = useRef<{ ctx: AudioContext; stream: MediaStream; analyser: AnalyserNode; raf: number } | null>(null);
   const recRef = useRef<SR | null>(null);
+  const wantRef = useRef(false);
 
   const start = async () => {
     setError(null);
@@ -64,10 +65,19 @@ export function MicPanel({ onTranscript }: Props) {
           onTranscript?.(t);
         };
         rec.onerror = () => {};
-        rec.onend = () => setListening(false);
+        rec.onend = () => {
+          // Auto-restart while the user still wants to listen, so the mic
+          // indicator doesn't flicker on/off when the recognizer pauses.
+          if (wantRef.current) {
+            try { rec.start(); } catch { /* already started */ }
+          } else {
+            setListening(false);
+          }
+        };
         rec.start();
         recRef.current = rec;
       }
+      wantRef.current = true;
       setListening(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Mic error");
@@ -75,6 +85,7 @@ export function MicPanel({ onTranscript }: Props) {
   };
 
   const stop = () => {
+    wantRef.current = false;
     const a = audioRef.current;
     if (a) {
       cancelAnimationFrame(a.raf);
