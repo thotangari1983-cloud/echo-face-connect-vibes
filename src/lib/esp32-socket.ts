@@ -144,8 +144,8 @@ class ESP32Socket {
       if (msg.type === "status") {
         setDevice({
           connected: !!msg.connected,
-          ssid: msg.ssid ?? null,
-          ip: msg.ip ?? null,
+          ssid: (msg.ssid as string | undefined) ?? null,
+          ip: (msg.ip as string | undefined) ?? null,
           rssi: typeof msg.rssi === "number" ? msg.rssi : null,
         });
       }
