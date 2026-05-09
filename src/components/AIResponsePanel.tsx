@@ -26,8 +26,29 @@ export function AIResponsePanel({ incoming }: Props) {
     { id: "0", role: "ai", text: "Echo online. Awaiting input." },
   ]);
   const [voice, setVoice] = useState(false);
+  const voiceRef = useRef(false);
   const lastRef = useRef<string>("");
   const endRef = useRef<HTMLDivElement>(null);
+
+  const toggleVoice = () => {
+    const next = !voice;
+    setVoice(next);
+    voiceRef.current = next;
+    // Unlock speechSynthesis inside the user gesture (required on mobile).
+    if (next && typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const primer = new SpeechSynthesisUtterance("Voice on");
+        primer.volume = 1;
+        primer.rate = 1.05;
+        window.speechSynthesis.speak(primer);
+      } catch {
+        /* ignore */
+      }
+    } else if (!next && typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  };
 
   useEffect(() => {
     if (!incoming || incoming === lastRef.current) return;
@@ -37,14 +58,14 @@ export function AIResponsePanel({ incoming }: Props) {
     const r = reply(incoming);
     setTimeout(() => {
       setMsgs((m) => [...m, { id: crypto.randomUUID(), role: "ai", text: r }]);
-      if (voice && typeof window !== "undefined" && "speechSynthesis" in window) {
+      if (voiceRef.current && typeof window !== "undefined" && "speechSynthesis" in window) {
         const u = new SpeechSynthesisUtterance(r);
         u.rate = 1.05;
         u.pitch = 1;
         window.speechSynthesis.speak(u);
       }
     }, 600);
-  }, [incoming, voice]);
+  }, [incoming]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,7 +82,7 @@ export function AIResponsePanel({ incoming }: Props) {
             AI Response
           </span>
         </div>
-        <button onClick={() => setVoice((v) => !v)} className="btn-ghost">
+        <button onClick={toggleVoice} className="btn-ghost">
           {voice ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
           {voice ? "Voice On" : "Muted"}
         </button>
