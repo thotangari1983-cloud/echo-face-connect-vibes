@@ -42,6 +42,44 @@ export function CameraFeed({ onFrame, onMouthOpen, running = false }: Props) {
 
   useEffect(() => () => stop(), []);
 
+  // Stream frames to the Python /lip endpoint at ~5fps while running.
+  useEffect(() => {
+    if (!active || !running) {
+      lipOpenRef.current = 0;
+      return;
+    }
+    let cancelled = false;
+    const canvas = document.createElement("canvas");
+    canvas.width = 320;
+    canvas.height = 240;
+    const ctx = canvas.getContext("2d")!;
+    const tick = async () => {
+      if (cancelled) return;
+      const v = videoRef.current;
+      if (v && v.videoWidth) {
+        ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+        const blob: Blob | null = await new Promise((r) =>
+          canvas.toBlob((b) => r(b), "image/jpeg", 0.7),
+        );
+        if (blob) {
+          try {
+            const res = await echofaceApi.lip(blob);
+            const ratio = Math.max(0, Math.min(1, (res.ratio ?? 0) / 0.4));
+            lipOpenRef.current = ratio;
+            onMouthOpen?.(ratio);
+          } catch {
+            /* backend offline — stay silent */
+          }
+        }
+      }
+      if (!cancelled) setTimeout(tick, 200);
+    };
+    tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [active, running, onMouthOpen]);
+
   // Simulated lip landmarks + mouth-open metric (placeholder for MediaPipe).
   useEffect(() => {
     if (!active) return;

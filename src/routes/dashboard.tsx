@@ -9,6 +9,7 @@ import { LipReadPanel } from "@/components/LipReadPanel";
 import { AIResponsePanel } from "@/components/AIResponsePanel";
 import { OledSimulator } from "@/components/OledSimulator";
 import { LogsConsole, type LogEntry } from "@/components/LogsConsole";
+import { BackendSettingsCard } from "@/components/BackendSettingsCard";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -83,6 +84,7 @@ function Dashboard() {
 
           <div className="space-y-5">
             <DeviceStatusCard />
+            <BackendSettingsCard />
             <OledSimulator text={lipText} />
             <LogsConsole logs={logs} />
           </div>
