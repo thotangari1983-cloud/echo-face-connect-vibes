@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, Volume2, VolumeX } from "lucide-react";
+import { echofaceApi } from "@/lib/echoface-backend";
 
 type Msg = { id: string; role: "user" | "ai"; text: string };
 
@@ -55,16 +56,35 @@ export function AIResponsePanel({ incoming }: Props) {
     lastRef.current = incoming;
     const userMsg: Msg = { id: crypto.randomUUID(), role: "user", text: incoming };
     setMsgs((m) => [...m, userMsg]);
-    const r = reply(incoming);
-    setTimeout(() => {
-      setMsgs((m) => [...m, { id: crypto.randomUUID(), role: "ai", text: r }]);
-      if (voiceRef.current && typeof window !== "undefined" && "speechSynthesis" in window) {
-        const u = new SpeechSynthesisUtterance(r);
-        u.rate = 1.05;
-        u.pitch = 1;
-        window.speechSynthesis.speak(u);
+
+    let cancelled = false;
+    (async () => {
+      // Try Python backend (Gemini). Fall back to local canned reply.
+      let r: string;
+      try {
+        r = await echofaceApi.chat(incoming);
+        if (!r) throw new Error("empty");
+      } catch {
+        r = reply(incoming);
       }
-    }, 600);
+      if (cancelled) return;
+      setMsgs((m) => [...m, { id: crypto.randomUUID(), role: "ai", text: r }]);
+      if (voiceRef.current) {
+        // Prefer backend Coqui TTS; fall back to browser speechSynthesis.
+        try {
+          await echofaceApi.tts(r);
+        } catch {
+          if (typeof window !== "undefined" && "speechSynthesis" in window) {
+            const u = new SpeechSynthesisUtterance(r);
+            u.rate = 1.05;
+            window.speechSynthesis.speak(u);
+          }
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [incoming]);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, CameraOff, Aperture } from "lucide-react";
+import { echofaceApi } from "@/lib/echoface-backend";
 
 type Props = {
   onFrame?: (canvas: HTMLCanvasElement) => void;
@@ -13,6 +14,7 @@ export function CameraFeed({ onFrame, onMouthOpen, running = false }: Props) {
   const [active, setActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const lipOpenRef = useRef(0);
 
   const start = async () => {
     setError(null);
@@ -39,6 +41,44 @@ export function CameraFeed({ onFrame, onMouthOpen, running = false }: Props) {
   };
 
   useEffect(() => () => stop(), []);
+
+  // Stream frames to the Python /lip endpoint at ~5fps while running.
+  useEffect(() => {
+    if (!active || !running) {
+      lipOpenRef.current = 0;
+      return;
+    }
+    let cancelled = false;
+    const canvas = document.createElement("canvas");
+    canvas.width = 320;
+    canvas.height = 240;
+    const ctx = canvas.getContext("2d")!;
+    const tick = async () => {
+      if (cancelled) return;
+      const v = videoRef.current;
+      if (v && v.videoWidth) {
+        ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+        const blob: Blob | null = await new Promise((r) =>
+          canvas.toBlob((b) => r(b), "image/jpeg", 0.7),
+        );
+        if (blob) {
+          try {
+            const res = await echofaceApi.lip(blob);
+            const ratio = Math.max(0, Math.min(1, (res.ratio ?? 0) / 0.4));
+            lipOpenRef.current = ratio;
+            onMouthOpen?.(ratio);
+          } catch {
+            /* backend offline — stay silent */
+          }
+        }
+      }
+      if (!cancelled) setTimeout(tick, 200);
+    };
+    tick();
+    return () => {
+      cancelled = true;
+    };
+  }, [active, running, onMouthOpen]);
 
   // Simulated lip landmarks + mouth-open metric (placeholder for MediaPipe).
   useEffect(() => {
@@ -78,11 +118,9 @@ export function CameraFeed({ onFrame, onMouthOpen, running = false }: Props) {
           ctx.stroke();
         });
 
-        // Only simulate lip movement when the assistant is actively
-        // listening — prevents the camera from auto-driving lip recognition.
-        const t = performance.now() / 600;
-        const open = running ? (Math.sin(t) + 1) / 2 : 0;
-        if (running) onMouthOpen?.(open);
+        // Mouth ratio comes from the Python backend /lip endpoint when running.
+        // Falls back to 0 when offline so we never auto-drive recognition.
+        const open = running ? lipOpenRef.current : 0;
         const mx = c.width / 2;
         const my = y + h * 0.78;
         const mw = w * 0.32;
